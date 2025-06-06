@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TOGA", "TOGA\TOGA.csproj", "{043586D3-3CA3-98E0-5D43-797C941A0F84}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TOGASetup", "TOGASetup\TOGASetup.vdproj", "{DD7370C7-8530-4099-64BA-164B44C29EC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Setup|Any CPU = Setup|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Setup|Any CPU.ActiveCfg = Debug|Any CPU
+		{043586D3-3CA3-98E0-5D43-797C941A0F84}.Setup|Any CPU.Build.0 = Debug|Any CPU
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Debug|Any CPU.ActiveCfg = Debug
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Debug|Any CPU.Build.0 = Debug
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Release|Any CPU.ActiveCfg = Release
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Release|Any CPU.Build.0 = Release
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Setup|Any CPU.ActiveCfg = Setup
+		{DD7370C7-8530-4099-64BA-164B44C29EC0}.Setup|Any CPU.Build.0 = Setup
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {10FF7884-E82E-4A4C-9622-63AB2D30286A}
+	EndGlobalSection
+EndGlobal
