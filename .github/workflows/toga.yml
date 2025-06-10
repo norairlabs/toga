@@ -4,11 +4,9 @@ name: Build & Deploy Toga
 # Triggers
 on:
   # Runs on pushes targeting the default branch
+   # Push a tag to run this workflow, ex: v0.0.1
   push:
     branches: ["main"]
-    
-  # Push a tag to run this workflow, ex: v0.0.1
-  push:
     tags:
       - "v*.*.*"
   
