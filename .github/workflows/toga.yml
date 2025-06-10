@@ -1,16 +1,14 @@
 # Workflow to Build & Deploy Toga
-name: Build & Deploy Toga
+name: Build TOGA & Deploy Installer to CDN
 
 # Triggers
 on:
-  # Runs on pushes targeting the default branch
    # Push a tag to run this workflow, ex: v0.0.1
   push:
-    branches: ["main"]
     tags:
       - "v*.*.*"
   
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows you to run this workflow manually from the Actions Tab
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -20,111 +18,112 @@ permissions:
   id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
 
-  # Build
+  # Build Stage
   build:
+
+    # Build only for release configuration
     strategy:
-      fail-fast: false
-      matrix:
-        # Build only for release configuration
+      fail-fast: true
+      matrix:   
         configuration: [Release]
 
-    # For a list of available runner types, refer to
-    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    # Build On Windows
     runs-on: windows-latest                                                       
-                                                                                    
+
+    # Set ENV Options                                                                             
     env:
-      # Replace with your solution name, i.e. MyApp.sln.
+    
+      # Set Solution Name
       Solution_Name: TOGA.sln
 
-      # Replace with the path to your project, i.e. MyApp.csproj.
+      # Set Project Path
       Project_Path: TOGA\TOGA.csproj
 
-      # Workspace path where dotnet will publish the release build
+      # Set Release Path
       Workspace_Release_Build_Path: ${{ github.workspace }}\release\*
 
-      # Workspace path where to create the zip of release build
-      Workspace_Release_Build_Zip_Path: ${{ github.workspace }}\TOGA-${{ github.ref_name }}.zip
+      # Set Release Path - ZIP
+      Workspace_Release_Build_Zip_Path: ${{ github.workspace }}\TOGA-${{ github.ref_name }}-portable.zip
 
-      # Workspace path of installer project i.e. MyApp.vdproj
+      # Set Installer Project Path
       Workspace_Installer_Path: ${{ github.workspace }}\TOGASetup\TOGASetup.vdproj
 
-      # Workspace path where devenv.com will publish the MSI Installer
+      # Set Release Path - Installer
       Workspace_Installer_Setup_Build_Path: ${{ github.workspace }}\TOGASetup\Setup\*
 
-      # Workspace path where to create the zip of the msi installer
-      Workspace_Installer_Setup_Build_Zip_Path: ${{ github.workspace }}\TOGASetup-latest.zip
+      # Set Release Path - Installer - ZIP
+      Workspace_Installer_Setup_Build_Zip_Path: ${{ github.workspace }}\TOGA-${{ github.ref_name }}-installer.zip
       
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-
-    # Setup GH Pages
-    - name: Setup Pages
+    - name: Setup GH Pages
       id: pages
       uses: actions/configure-pages@v5
 
-    # Install the .NET Core workload
+    # ENV - Setup
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore the application
+    # Project Stages
+    - name: Project - Setup
       run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.configuration }}
-
-    # Show Workspace Path
-    - name: Workspace path
-      run: echo 'Workspace path = ${{ github.workspace }}'
-
-    # Publish release build of project
-    - name: Publish
+    - name: Project - Build
       run: dotnet publish $env:Project_Path -c Release -o release
-
-    # Zip Release Build
-    - name: Zip Release
+    - name: Project - ZIP
       run: Compress-Archive -Path $env:Workspace_Release_Build_Path -Destination $env:Workspace_Release_Build_Zip_Path
           
-    # Build MSI Installer
-    - name: Setup VS Dev Environment
+    # Installer Stages
+    - name: Installer - Setup
       uses: seanmiddleditch/gha-setup-vsdevenv@v4
-    - name: Build installer
+    - name: Installer - Build
       run: devenv.com $env:Workspace_Installer_Path /Build "Setup"
-
-    # Zip Release MSI Installer
-    - name: Zip Release MSI Installer
+    - name: Installer - ZIP
       run: Compress-Archive -Path $env:Workspace_Installer_Setup_Build_Path -Destination $env:Workspace_Installer_Setup_Build_Zip_Path
 
-    # Release artifacts
+    # Upload Artifacts
     - name: Release artifacts
       uses: softprops/action-gh-release@v2.2.2
       with:
           files: |
-              ${{ github.workspace }}\TOGA-${{ github.ref_name }}.zip
-              ${{ github.workspace }}\TOGASetup-${{ github.ref_name }}.zip
+              ${{$env:Workspace_Release_Build_Zip_Path}}
+              ${{$env:Workspace_Installer_Setup_Build_Zip_Path}}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Deployment
+    # Run Commands
+    - name: CDN - Setup
+      shell: pwsh
+      run: |
+         mkdir cdn_output && cd cdn_output
+         Copy-Item $env:Workspace_Installer_Setup_Build_Zip_Path -Destination ./TOGA-latest.zip       
+          
+    # CDN - Setup
+    - name: CDN - Upload
+      id: deployment
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: cdn_output/
+          
+  # Deployment Stage
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - name: Deploy to GitHub Pages
