@@ -108,7 +108,7 @@ jobs:
     - name: CDN - Setup
       shell: pwsh
       run: |
-         mkdir cdn_output && cd cdn_output
+         cd cdn_output
          Copy-Item $env:Workspace_Installer_Setup_Build_Zip_Path -Destination ./TOGA-latest.zip       
           
     # CDN - Setup
