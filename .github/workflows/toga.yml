@@ -100,8 +100,8 @@ jobs:
       uses: softprops/action-gh-release@v2.2.2
       with:
           files: |
-              ${{$env:Workspace_Release_Build_Zip_Path}}
-              ${{$env:Workspace_Installer_Setup_Build_Zip_Path}}
+              ${{ env:Workspace_Release_Build_Zip_Path }}
+              ${{ env:Workspace_Installer_Setup_Build_Zip_Path }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
     # Run Commands
