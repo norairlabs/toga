@@ -108,7 +108,7 @@ jobs:
     - name: CDN - Setup
       shell: pwsh
       run: |
-         cd cdn_output
+         cd gh-pages
          Copy-Item $env:Workspace_Installer_Setup_Build_Zip_Path -Destination ./TOGA-latest.zip       
           
     # CDN - Setup
@@ -116,7 +116,7 @@ jobs:
       id: deployment
       uses: actions/upload-pages-artifact@v3
       with:
-        path: cdn_output/
+        path: gh-pages/
           
   # Deployment Stage
   deploy:
