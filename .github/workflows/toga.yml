@@ -1,12 +1,31 @@
-name: TOGA
+# Workflow to Build & Deploy Toga
+name: Build & Deploy Toga
 
+# Triggers
 on:
+  # Push a tag to run this workflow, ex: v0.0.1
   push:
     tags:
-      # Push a tag to run this workflow, ex: v0.0.1
       - "v*.*.*"
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
+
+  # Build
   build:
     strategy:
       fail-fast: false
@@ -17,11 +36,7 @@ jobs:
     # For a list of available runner types, refer to
     # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     runs-on: windows-latest                                                       
-                                                                                  
-    permissions:
-      # Set write permissions for default GITHUB_TOKEN
-      contents: write
-  
+                                                                                    
     env:
       # Replace with your solution name, i.e. MyApp.sln.
       Solution_Name: TOGA.sln
@@ -38,17 +53,22 @@ jobs:
       # Workspace path of installer project i.e. MyApp.vdproj
       Workspace_Installer_Path: ${{ github.workspace }}\TOGASetup\TOGASetup.vdproj
 
-      # Workspace path where devenv.com will publish the setup build of msi installer
+      # Workspace path where devenv.com will publish the MSI Installer
       Workspace_Installer_Setup_Build_Path: ${{ github.workspace }}\TOGASetup\Setup\*
 
-      # Workspace path where to create the zip of setup build of msi installer
-      Workspace_Installer_Setup_Build_Zip_Path: ${{ github.workspace }}\TOGASetup-${{ github.ref_name }}.zip
+      # Workspace path where to create the zip of the msi installer
+      Workspace_Installer_Setup_Build_Zip_Path: ${{ github.workspace }}\TOGASetup-latest.zip
       
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    # Setup GH Pages
+    - name: Setup Pages
+      id: pages
+      uses: actions/configure-pages@v5
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -66,7 +86,7 @@ jobs:
       env:
         Configuration: ${{ matrix.configuration }}
 
-    # Show workspace path
+    # Show Workspace Path
     - name: Workspace path
       run: echo 'Workspace path = ${{ github.workspace }}'
 
@@ -96,3 +116,15 @@ jobs:
               ${{ github.workspace }}\TOGA-${{ github.ref_name }}.zip
               ${{ github.workspace }}\TOGASetup-${{ github.ref_name }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deployment
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
